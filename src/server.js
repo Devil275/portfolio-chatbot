@@ -143,4 +143,4 @@ app.use((err, req, res, next) => {
 });
 
 // Export as serverless handler for Vercel
-export const handler = serverless(app);
+export default serverless(app);

@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import OpenAI from 'openai';
-import serverless from 'serverless-http';
 
 const app = express();
 app.set('trust proxy', true);
@@ -132,4 +131,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-export default serverless(app);
+export default app;

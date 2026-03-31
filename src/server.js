@@ -7,6 +7,7 @@ import OpenAI from 'openai';
 import serverless from 'serverless-http';
 
 const app = express();
+app.set('trust proxy', true);
 
 // Initialize OpenAI
 const openai = new OpenAI({

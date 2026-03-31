@@ -2,14 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import OpenAI from 'openai';
-
-dotenv.config();
+import serverless from 'serverless-http';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Initialize OpenAI
 const openai = new OpenAI({
@@ -49,8 +46,7 @@ const portfolioData = {
       title: 'Computer Tutor',
       company: 'Saksham Computer Center',
       duration: '2021 - Present',
-      description:
-        'Teaching programming, web technologies, and computer fundamentals',
+      description: 'Teaching programming, web technologies, and computer fundamentals',
     },
   ],
   portfolio_url: 'https://devil275.github.io/raj-shekhar-portfolio/',
@@ -64,14 +60,11 @@ const portfolioData = {
 app.post('/api/chat', async (req, res) => {
   try {
     const { message, context = 'general' } = req.body;
-
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
-
     // System prompt with portfolio context
     const systemPrompt = `You are Raj Shekhar's professional AI assistant.
-
 Raj's Information:
 - Name: ${portfolioData.name}
 - Current Role: ${portfolioData.title}
@@ -81,7 +74,6 @@ Raj's Information:
 - LinkedIn: ${portfolioData.linkedin_url}
 - Email: ${portfolioData.email}
 - Location: ${portfolioData.location}
-
 You should:
 1. Answer questions about Raj's professional background, skills, and experience
 2. Provide information from the portfolio and LinkedIn profile
@@ -90,23 +82,15 @@ You should:
 5. If you don't know something, direct them to the portfolio or LinkedIn profile`;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: message,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
       ],
       temperature: 0.7,
       max_tokens: 500,
     });
-
     const reply = response.choices[0].message.content;
-
     res.json({
       reply,
       confidence: 0.95,
@@ -138,12 +122,12 @@ app.post('/webhook/linkedin', (req, res) => {
 app.get('/widget.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
   res.send(`
-    (function() {
-      const widget = document.createElement('div');
-      widget.id = 'portfolio-chatbot';
-      widget.innerHTML = '<p>Chatbot Widget Loading...</p>';
-      document.body.appendChild(widget);
-    })();
+(function() {
+  const widget = document.createElement('div');
+  widget.id = 'portfolio-chatbot';
+  widget.innerHTML = '<p>Chatbot Widget Loading...</p>';
+  document.body.appendChild(widget);
+})();
   `);
 });
 
@@ -158,11 +142,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Portfolio Chatbot running on http://localhost:${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Chat API: POST http://localhost:${PORT}/api/chat`);
-});
-
-export default app;
+// Export as serverless handler for Vercel
+export const handler = serverless(app);

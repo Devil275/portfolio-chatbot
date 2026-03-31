@@ -23,8 +23,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    keyGenerator: (req) => req.ip || 'global',
+    standardHeaders: false,
+    legacyHeaders: false,
 });
 app.use(limiter);
 
